@@ -12,10 +12,10 @@ import shutil
 import requests
 import math
 
-from embed_metadata_to_file import EmbedMetadataToFile
-from get_apple_music_token import GetAppleMusicToken
-from api_work import ApiMusicApple
-from ammg_cache import AmmgCache
+from ammg.embed_metadata_to_file import EmbedMetadataToFile
+from ammg.get_apple_music_token import GetAppleMusicToken
+from ammg.api_work import ApiMusicApple
+from ammg.ammg_cache import AmmgCache
 
 
 def parse_arguments():
@@ -421,6 +421,3 @@ def main():
     parse_arguments()
 
     sys.exit(0)
-
-if __name__ == '__main__':
-    main()
