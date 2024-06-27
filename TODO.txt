@@ -1,0 +1,3 @@
+Checklist for releasing v0.2.0 of ammg:
+- Support m4a files.
+- Check for file before adding metadata to it (if opus/m4a).
