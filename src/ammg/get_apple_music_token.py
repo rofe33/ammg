@@ -3,7 +3,7 @@ import re
 import pathlib
 import json
 
-from ammg.ammg_config import AmmgConfig
+from .ammg_config import AmmgConfig
 
 # Note:
 #
@@ -88,7 +88,7 @@ class GetAppleMusicToken():
 
     def check_token_validity(self) -> bool:
         """Returns true if token is valid, otherwise false."""
-        from ammg.api_work import ApiMusicApple
+        from .api_work import ApiMusicApple
 
         api = ApiMusicApple(
             self.token,

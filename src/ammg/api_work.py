@@ -3,7 +3,7 @@ import requests
 import json
 import sys
 
-from ammg.ammg_cache import AmmgCache
+from .ammg_cache import AmmgCache
 
 
 class ApiMusicApple():
