@@ -44,6 +44,14 @@ def parse_arguments():
         exit_on_error=True,
     )
 
+    # Version
+    parser.add_argument(
+        '-v',
+        '--version',
+        action='version',
+        version='%(prog)s 0.2.0',
+    )
+
     subparsers = parser.add_subparsers(
         title='Commamds',
         required=True,
