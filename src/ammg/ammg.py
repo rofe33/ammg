@@ -238,7 +238,6 @@ def get_args(args):
 
     # Downloading Cover to cache
     cover_path = api.cache_dir.joinpath(f'{args.album_id}.jpg')
-    cover_info = {}
     cover_url = album_info.get('cover_url')
     cover_url = cover_url.replace(
         '{w}',
@@ -247,6 +246,15 @@ def get_args(args):
         '{h}',
         str(args.cover_height),
     )
+
+    # Cover Info
+    cover_info = {
+        'type': 3,
+        'mime': 'image/jpeg',
+        'width': args.cover_width,
+        'height': args.cover_height,
+        'depth': 8,
+    }
 
     # If clean request re-download the cover
     if args.clean_request or not cover_path.is_file():
