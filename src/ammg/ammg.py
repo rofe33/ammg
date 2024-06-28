@@ -11,19 +11,32 @@ import mutagen
 import shutil
 import requests
 import math
+import platform
+import os
 
 from .embed_metadata_to_file import EmbedMetadataToFile
 from .get_apple_music_token import GetAppleMusicToken
 from .api_work import ApiMusicApple
 from .ammg_cache import AmmgCache
 
+# Some Terminal Colors
+FR = '\033[00m'  # Reset
+FB = '\033[01m'  # Bold
+CR = '\033[31m'  # Red
+CG = '\033[32m'  # Green
+CY = '\033[33m'  # Yellow
+
+if platform.system() == 'Windows':
+    os.system('')
+
 
 def parse_arguments():
     epilog = 'All The Glory To Jesus God...'
     parser = argparse.ArgumentParser(
         prog='ammg',
+        formatter_class=argparse.RawTextHelpFormatter,
         description=(
-            'A tool for appending metadata to music files from Apple Music.'
+            'A tool for appending metadata from Apple Music to music files.'
         ),
         epilog=epilog,
         add_help=True,
@@ -40,6 +53,7 @@ def parse_arguments():
     get_parser_help = 'Download music metadata and embed them into file.'
     get_parser = subparsers.add_parser(
         name='get',
+        formatter_class=argparse.RawTextHelpFormatter,
         description=get_parser_help,
         epilog=epilog,
         help=get_parser_help,
@@ -71,7 +85,6 @@ def parse_arguments():
         '--output-directory',
         type=pathlib.Path,
         help='Output directory in which the music files will be moved',
-        default=pathlib.Path('Music'),
         metavar='path/to/output_directory',
         required=True,
     )
@@ -80,7 +93,10 @@ def parse_arguments():
         '-s',
         '--storefront',
         type=str,
-        help='Storefront to be used when querying metadata',
+        help=(
+            'Storefront to be used when querying metadata'
+            f' {FB}(default: us){FR}'
+        ),
         default='us',
     )
 
@@ -96,14 +112,13 @@ def parse_arguments():
         '-c',
         '--clean-request',
         action='store_true',
-        default=False,
-        help='Don\'t get cached requests',
+        help=f'Don\'t get cached requests {FB}(default: False){FR}',
     )
 
     get_parser.add_argument(
         '--cover-width',
         type=int,
-        help='Cover width (default: 500)',
+        help=f'Cover width  {FB}(default: 500){FR}',
         default=500,
 
     )
@@ -111,50 +126,65 @@ def parse_arguments():
     get_parser.add_argument(
         '--cover-height',
         type=int,
-        help='Cover height (default: 500)',
+        help=f'Cover height {FB}(default: 500){FR}',
         default=500,
     )
 
     get_parser.add_argument(
         '--do-not-check-token',
         action='store_true',
-        default=False,
-        help='Whether to not check token before using it',
+        help=(
+            'Whether to not check token before using it'
+            f' {FB}(default: false){FR}'
+        ),
     )
 
     get_parser.add_argument(
         '--duration-error',
         type=int,
         default=5,
-        help='Duration error when attempting to look correct file music.',
+        help=(
+            'Duration error when attempting to look correct file music'
+            f' {FB}(default: 5){FR}'
+        ),
     )
 
     get_parser.add_argument(
         '--create-lrc-file',
         action='store_true',
-        default=False,
-        help='Whether to create a .lrc file next to the opus file',
+        help=(
+            'Whether to create a .lrc file next to the opus file'
+            f' {FB}(default: false){FR}'
+        ),
     )
 
     get_parser.add_argument(
         '--lrc-file-text',
         type=str,
         default='No Lyrics.',
-        help='Text written in the .lrc file (default: No Lyrics.)',
+        help=(
+            'Text written in the .lrc file'
+            f' {FB}(default: No Lyrics.){FR}'
+        ),
     )
 
     get_parser.add_argument(
         '--create-txt-file',
         action='store_true',
-        default=False,
-        help='Whether to create a .txt file next to the opus file',
+        help=(
+            'Whether to create a .txt file next to the opus file'
+            f' {FB}(default: false){FR}'
+        ),
     )
 
     get_parser.add_argument(
         '--txt-file-text',
         type=str,
         default='No Lyrics.',
-        help='Text written in the .txt file (default: No Lyrics.)',
+        help=(
+            'Text written in the .txt file'
+            f' {FB}(default: No Lyrics.){FR}'
+        ),
     )
 
     # Cache Work
@@ -279,9 +309,6 @@ def get_args(args):
         album_info.get('album_name')
     )
 
-    if not album_directory.is_dir():
-        album_directory.mkdir(parents=True)
-
     for track in album_info.get('tracks', []):
         track_number = track.get('track_number')
 
@@ -289,7 +316,10 @@ def get_args(args):
                 and track_number not in args.tracks):
             continue
 
-        print(f'Looking for {track.get('title')} in {args.directory}.')
+        print(
+            f'Looking for {FB}{track.get('title')}{FR}'
+            f' in {FB}{args.directory}{FR}.'
+        )
 
         # Valid file for tags, is based on:
         #   - Youtube title found in apple title
@@ -326,7 +356,7 @@ def get_args(args):
                 )):
             print(
                 f'\t{music_file} is not supported'
-                ' (Just opus and m4a are supported).'
+                f' (Just {FB}opus{FR} and {FB}m4a{FR} are supported).'
             )
 
             sys.exit(2)
@@ -364,12 +394,9 @@ def get_args(args):
                 f'.lrc'
             )
 
-            if not disc_dir.is_dir():
-                disc_dir.mkdir()
-
         if music_file.is_file():
-            print(f'\tFound {music_file}')
-            print('\tEmbeding Metadata ', end='')
+            print(f'\tFound {FB}{music_file}{FR}')
+            print(f'\t{CY}Embeding Metadata{FR} ', end='')
 
             embed_data = EmbedMetadataToFile(
                 music_file=music_file,
@@ -377,7 +404,7 @@ def get_args(args):
                 artist=track.get('artist'),
                 album=album_info.get('album_name'),
                 album_artist=album_info.get('album_artist_name'),
-                date=album_info.get('album_release_date'),  # You can also have track.date
+                date=album_info.get('album_release_date'),
                 composer=track.get('composer', ''),
                 genre=track.get('genre'),
                 discnumber=str(track.get('discnumber')),
@@ -394,9 +421,17 @@ def get_args(args):
             )
 
             embed_data.save_music()
-            print('(done).')
+            print(f'{CG}(done).{FR}')
 
-            print(f'\tMoving to {new_music_file}.')
+            if not album_directory.is_dir():
+                print('\tCreating album directory.')
+                album_directory.mkdir(parents=True)
+
+            if album_info.get('disc_count') >= 2 and not disc_dir.is_dir():
+                print('\tCreating disc directory.')
+                disc_dir.mkdir()
+
+            print(f'\tMoving file to {new_music_file}.')
 
             music_file.rename(new_music_file)
 
