@@ -17,6 +17,15 @@ __opus__.
 However __m4a__  is used if  you want to  open the
 files in iTunes and sync them to your iPhone/iPad.
 
+## Installation
+
+You                  can                  download
+[ammg](https://pypi.org/project/ammg/) using pip:
+
+```sh
+pip install --upgrade ammg
+```
+
 ## Usage
 
 - __First:__ Choose your song, album, or single.
