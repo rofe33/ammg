@@ -1,3 +1,4 @@
 Checklist for releasing v0.2.0 of ammg:
-- Support m4a files.
-- Check for file before adding metadata to it (if opus/m4a).
+x Support m4a files.
+x Check for file before adding metadata to it (if opus/m4a).
+x Fix cover_info being passed empty to embed metadata.
