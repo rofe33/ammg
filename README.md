@@ -9,6 +9,14 @@ holds the same song info...
 With ammg you choose your youtube music songs, and
 you choose which metadata.
 
+__Note:__  Supported file  types  are __m4a__  and
+__opus__.  Using __opus__  is better  than __m4a__
+because the  best quality available on  youtube is
+__opus__.
+
+However __m4a__  is used if  you want to  open the
+files in iTunes and sync them to your iPhone/iPad.
+
 ## Usage
 
 - __First:__ Choose your song, album, or single.
@@ -28,30 +36,46 @@ Dave Koz)`.
 > (album link)__,  you will be able  to add metadata
 > without manual intervetion.
 
-__Command Process:__ Download the music using `yt-dlp` (make sure you download yt-dlp first).
+__Command  Process:__  Download  the  music  using
+[yt-dlp](https://github.com/yt-dlp/yt-dlp)   (make
+sure you download yt-dlp first).
 
-- For  `android`  (VLC,  Metro...),  and  `linux`
-  (MPD...) `.opus` files will work. (Supported)
-- If you want to be able to sync to the __Itunes__
-  application  on Apple  devices, `.opus`  files are
-  not supported  in the Itunes  windows application,
-  so `m4a` will be supported in future versions.
-
-__Downloading__ `.opus` file using `yt-dlp`:
+- __Downloading__ `.opus` file using `yt-dlp`:
 
 ```sh
 yt-dlp -cw -o "music/%(title)s.%(ext)s" -x --audio-quality "0" "https://music.youtube.com/playlist?list=OLAK5uy_kVIMiCrxX4gmnZI-IufqRvJte6Hk3NTbY"
 ```
 
+- __Downloading__ `.m4a` file using `yt-dlp`:
+
+```sh
+yt-dlp -cw -o "music/%(title)s.%(ext)s" -x --audio-format m4a --audio-quality "0" "https://music.youtube.com/playlist?list=OLAK5uy_kVIMiCrxX4gmnZI-IufqRvJte6Hk3NTbY"
+```
+
 This  will  download  `Careless  Whisper`  in  the
-`music` folder.  So the path  of the song  will be
-`music/Careless Whisper (feat. Dave Koz).opus`.
+`music`  folder. So  the  path  of the  downloaded
+song will  be `music/Careless Whisper  (feat. Dave
+Koz).opus`.
 
 
 __Adding__ the metadata using `ammg`:
 
+__Required__ arguments:
+
+- `-i`: Apple album id.
+- `-o`: Output directory.
+    - The directory where the file will be once it is saved.
+- `positional argument`: here `music` where the downloaded song is.
+
 ```sh
 ammg get -i 1681177202 -o Ordered_Music music
+```
+
+If you are querying a lot of songs in one session,
+it is adviced to use `--do-not-check-token`.
+
+```sh
+ammg get --do-not-check-token -i 1681177202 -o Ordered_Music music
 ```
 
 After  embedding   metadata,  the  file   will  be
@@ -77,6 +101,6 @@ A shell function that accepts a link and album id:
 ```sh
 domuspp() {
     domus "$1";
-    ammg get -i "$2" -o Ordered_Music music;
+    ammg get --do-not-check-token -i "$2" -o Ordered_Music music;
 }
 ```
