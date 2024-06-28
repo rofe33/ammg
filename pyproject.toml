@@ -4,17 +4,24 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ammg"
-version = "0.2.0"
-description = "A tool for appending metadata to music files from Apple Music."
+version = "0.2.1"
+description = "A tool for appending metadata from Apple Music to music files."
 authors = [
-  {name="Raphael Tannous", email="raphaeltannous@proton.me"},
+  { name="Raphael Tannous", email="raphaeltannous@proton.me" },
 ]
 readme = "README.md"
-license = {file = "LICENSE"}
+license = { file = "LICENSE" }
 requires-python = ">=3.8"
-keywords = ["music", "metadata", "mutagen", "apple music"]
+
+keywords = [
+  "music",
+  "metadata",
+  "mutagen",
+  "apple music"
+]
+
 classifiers = [
-    "Development Status :: 4 - Beta",
+  "Development Status :: 4 - Beta",
 ]
 
 dependencies = [
