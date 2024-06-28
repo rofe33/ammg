@@ -303,6 +303,21 @@ def get_args(args):
             if error <= args.duration_error and file_title in apple_title:
                 music_file = file
 
+        if not (isinstance(
+                mutagen.File(music_file).info,
+                mutagen.oggopus.OggOpusInfo
+            )
+                or isinstance(
+                    mutagen.File(music_file).info,
+                    mutagen.mp4.MP4Info
+                )):
+            print(
+                f'\t{music_file} is not supported'
+                ' (Just opus and m4a are supported).'
+            )
+
+            sys.exit(2)
+
         if music_file is None:
             print('\tNo music found.')
             continue

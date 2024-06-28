@@ -1,6 +1,7 @@
 import mutagen
 import pathlib
 import base64
+import sys
 
 from mutagen.flac import Picture
 
@@ -26,8 +27,19 @@ class EmbedMetadataToFile():
                  label: str,
                  cover: pathlib.Path,
                  cover_info: dict):
-        self.music_file = music_file
-        self.music = mutagen.File(self.music_file)
+        self.music_file: pathlib.Path = music_file
+        self.music: mutagen.File = mutagen.File(self.music_file)
+
+        # Which metadata format to use
+        # Not checking the file extension.
+        if isinstance(self.music.info, mutagen.mp4.MP4Info):
+            self.music_file_type = 'm4a'
+        elif isinstance(self.music.info, mutagen.oggopus.OggOpusInfo):
+            self.music_file_type = 'opus'
+        else:
+            print('File Type Not Supported.')
+
+            sys.exit(2)
 
         self.title = title
         self.artist = artist
@@ -54,6 +66,9 @@ class EmbedMetadataToFile():
         with open(self.cover, 'rb') as pic:
             cover_data = pic.read()
 
+        if self.music_file_type == 'm4a':
+            return cover_data
+
         picture = Picture()
         picture.data = cover_data
         picture.type = self.cover_info.get('type', 3)
@@ -68,8 +83,104 @@ class EmbedMetadataToFile():
 
         return vcomment_value
 
-    def save_music(self):
-        """Save new metadata to file."""
+    def _save_m4a_music(self):
+        """Save new metadata to m4a file.
+
+        - [x] title         -> \xa9num
+        - [x] artist        -> \xa9ART
+        - [x] album         -> \xa9alb
+        - [x] albumartist   -> aART
+        - [x] date          -> \xa9day
+        - [x] composer      -> \xa9wrt
+        - [x] genre         -> \xa9gen
+        - [x] cover         -> covr
+        - [x] copyright     -> cprt
+        - [x] tracknumber   -> trkn[0]
+        - [x] tracktotal    -> trkn[1]
+        - [x] discnumber    -> disk[0]
+        - [x] disctotal     -> disk[1]
+        - [x] isrc          -> Freeform (ISRC)
+        - [x] media         -> Freeform (MEDIA)
+        - [x] label         -> Freeform (LABEL)
+
+        - [ ] releasetype   -> There is no releasetype.
+        """
+
+        self.music['\xa9nam'] = self.title
+
+        self.music['\xa9ART'] = self.artist
+        self.music['\xa9alb'] = self.album
+        self.music['aART'] = self.album_artist
+
+        self.music['\xa9day'] = self.date
+
+        self.music['\xa9wrt'] = self.composer
+        self.music['\xa9gen'] = self.genre
+
+        self.music['cprt'] = self.copyright
+        self.music['stik'] = [1]
+
+        self.music['disk'] = [
+            (
+                int(self.discnumber),
+                int(self.disctotal)
+            )
+        ]
+
+        self.music['trkn'] = [
+            (
+                int(self.tracknumber),
+                int(self.tracktotal)
+            )
+        ]
+
+        # Freeform
+        self.music['----:com.apple.iTunes:ISRC'] = [
+            mutagen.mp4.MP4FreeForm(
+                data=self.isrc.encode(),
+                dataformat=mutagen.mp4.AtomDataType.UTF8
+            )
+        ]
+
+        self.music['----:com.apple.iTunes:LABEL'] = [
+            mutagen.mp4.MP4FreeForm(
+                data=self.isrc.encode(),
+                dataformat=mutagen.mp4.AtomDataType.UTF8
+            )
+        ]
+
+        self.music['----:com.apple.iTunes:MEDIA'] = [
+            mutagen.mp4.MP4FreeForm(
+                data=self.media.encode(),
+                dataformat=mutagen.mp4.AtomDataType.UTF8
+            )
+        ]
+
+        self.music['covr'] = [self._process_image()]
+
+        self.music.save()
+
+    def _save_opus_music(self):
+        """Save new metadata to opus file.
+
+        - [x] title         -> title
+        - [x] artist        -> artist
+        - [x] album         -> album
+        - [x] albumartist   -> albumartist
+        - [x] date          -> date
+        - [x] composer      -> composer
+        - [x] genre         -> genre
+        - [x] cover         -> metadata_block_picture
+        - [x] copyright     -> copyright
+        - [x] tracknumber   -> tracknumber
+        - [x] tracktotal    -> tracktotal
+        - [x] discnumber    -> discnumber
+        - [x] disctotal     -> disctotal
+        - [x] isrc          -> isrc
+        - [x] media         -> media
+        - [x] label         -> label
+        - [x] releasetype   -> releasetype
+        """
 
         self.music['title'] = self.title
         self.music['artist'] = self.artist
@@ -92,3 +203,11 @@ class EmbedMetadataToFile():
         self.music['metadata_block_picture'] = [self._process_image()]
 
         self.music.save()
+
+    def save_music(self):
+        """Save new metadata."""
+
+        if self.music_file_type == 'opus':
+            self._save_opus_music()
+        else:
+            self._save_m4a_music()
