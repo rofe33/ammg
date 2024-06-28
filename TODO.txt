@@ -2,3 +2,10 @@ Checklist for releasing v0.2.0 of ammg:
 x Support m4a files.
 x Check for file before adding metadata to it (if opus/m4a).
 x Fix cover_info being passed empty to embed metadata.
+
+Checklist for releasing v0.2.1 of ammg:
+x Fix TypeError in mutagen.File().
+x Colorful print screen text.
+x Fix -t not working.
+x Create album in after saving metadata.
+x Implement -v/--version.
