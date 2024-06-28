@@ -311,6 +311,10 @@ def get_args(args):
             if error <= args.duration_error and file_title in apple_title:
                 music_file = file
 
+        if music_file is None:
+            print(f'\t{FB}{CR}No music found.{FR}')
+            continue
+
         if not (isinstance(
                 mutagen.File(music_file).info,
                 mutagen.oggopus.OggOpusInfo
@@ -325,10 +329,6 @@ def get_args(args):
             )
 
             sys.exit(2)
-
-        if music_file is None:
-            print('\tNo music found.')
-            continue
 
         new_music_file = album_directory.joinpath(
             f'{track.get("track_number"):#02} {track.get("title")}'
