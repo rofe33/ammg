@@ -88,6 +88,7 @@ def parse_arguments():
         '-t',
         '--tracks',
         nargs='+',
+        type=int,
         help='Make metadata for just a bunch of tracks',
     )
 
