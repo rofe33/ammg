@@ -70,7 +70,8 @@ class ApiMusicApple():
 
         return response_data
 
-    def analyze_response_album(self, response_data) -> dict:
+    @staticmethod
+    def analyze_response_album(response_data) -> dict:
         """Returns a dictionary of the analyzed album.
 
         Dictionary keys:
