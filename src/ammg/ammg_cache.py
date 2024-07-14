@@ -6,7 +6,7 @@ import sys
 class AmmgCache():
     """Handles cache work."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.__cache_dir: pathlib.Path
 
         system_os = platform.system()

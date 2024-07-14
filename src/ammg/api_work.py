@@ -13,13 +13,13 @@ class ApiMusicApple():
                  token,
                  album_id,
                  storefront: str = 'us',
-                 clean_request: bool = False):
+                 clean_request: bool = False) -> None:
         self.api_url: str = 'http://api.music.apple.com/v1/catalog'
         self.storefront: str = storefront
 
         self.token: str = token
         self.album_id: str = album_id
-        self.clean_request: str = clean_request
+        self.clean_request: bool = clean_request
 
         self.headers: dict = {
             'Authorization': f'Bearer {self.token}',
@@ -97,14 +97,14 @@ class ApiMusicApple():
 
         Dictionary keys:
             copyright:                      str
-            album_release_date              str
+            album_release_date:             str
             record_label:                   str
             track_count:                    int
             disc_count:                     int
             album_name:                     str
             album_artist_name:              str
             cover_url:                      str
-            release_type: release_type,     str
+            release_type:                   str
             tracks: album_tracks,           list
 
             Each track contains:
@@ -166,14 +166,14 @@ class ApiMusicApple():
 
             track_info['date'] = info.get('releaseDate')
             track_info['composer'] = info.get('composerName', '')
-            track_info['genre'] = info.get('genreNames')[0]
+            track_info['genre'] = info.get('genreNames', [''])[0]
             track_info['isrc'] = info.get('isrc')
             track_info['media'] = 'Digital Media'
 
             track_info['track_number'] = info.get('trackNumber')
             track_info['discnumber'] = info.get('discNumber')
 
-            disc_numbers.append(int(info.get('discNumber')))
+            disc_numbers.append(int(info.get('discNumber', '')))
 
             album_tracks.append(track_info)
 

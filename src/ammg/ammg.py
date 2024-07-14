@@ -275,12 +275,12 @@ def get_args(args):
     )
 
     # Requesting album info and analyzing int
-    response = api.get_response_data()
-    album_info = api.analyze_response_album(response)
+    api_response = api.get_response_data()
+    album_info = api.analyze_response_album(api_response)
 
     # Downloading Cover to cache
-    cover_path = CACHE.joinpath(f'{args.album_id}.jpg')
-    cover_url = album_info.get('cover_url')
+    cover_path: pathlib.Path = CACHE.joinpath(f'{args.album_id}.jpg')
+    cover_url: str = album_info.get('cover_url', '')
     cover_url = cover_url.replace(
         '{w}',
         str(args.cover_width),
@@ -309,15 +309,15 @@ def get_args(args):
     output_directory: pathlib.Path = args.output_directory
 
     alphabet_directory: pathlib.Path = output_directory.joinpath(
-        album_info.get('album_artist_name')[0].upper()
+        album_info.get('album_artist_name', [''])[0].upper()
     )
 
     artist_directory: pathlib.Path = alphabet_directory.joinpath(
-        album_info.get('album_artist_name')
+        album_info.get('album_artist_name', '')
     )
 
     album_directory = artist_directory.joinpath(
-        album_info.get('album_name')
+        album_info.get('album_name', '')
     )
 
     for track in album_info.get('tracks', []):
@@ -387,7 +387,7 @@ def get_args(args):
 
         # If  there's more  than one  disc create  a
         # Disc ## folder for each disc.
-        if album_info.get('disc_count') >= 2:
+        if album_info['disc_count'] >= 2:
             disc_dir = album_directory.joinpath(
                 f'Disc {track.get("discnumber"):#02}'
             )
@@ -409,7 +409,7 @@ def get_args(args):
             print(f'\tFound {FB}{music_file}{FR}')
             print(f'\t{CY}Embeding Metadata{FR} ', end='')
 
-            music_info: dict = track
+            music_info: dict[str, int] = track
             music_info['album'] = album_info.get('album_name')
             music_info['album_artist'] = album_info.get('album_artist_name')
             music_info['date'] = album_info.get('album_release_date')
@@ -433,7 +433,7 @@ def get_args(args):
                 print('\tCreating album directory.')
                 album_directory.mkdir(parents=True)
 
-            if album_info.get('disc_count') >= 2 and not disc_dir.is_dir():
+            if album_info['disc_count'] >= 2 and not disc_dir.is_dir():
                 print('\tCreating disc directory.')
                 disc_dir.mkdir()
 
