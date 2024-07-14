@@ -9,3 +9,6 @@ x Colorful print screen text.
 x Fix -t not working.
 x Create album in after saving metadata.
 x Implement -v/--version.
+
+Checklist for releasing v0.2.2 of ammg:
+- Refactoring some of the code.
