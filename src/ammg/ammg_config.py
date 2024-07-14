@@ -6,7 +6,7 @@ import sys
 class AmmgConfig():
     """Handles Config."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.__config_dir: pathlib.Path
 
         system_os = platform.system()
@@ -45,7 +45,7 @@ class AmmgConfig():
         if not self.__config_dir.is_dir():
             self.__config_dir.mkdir(parents=True)
 
-        return self._config_dir
+        return self.__config_dir
 
     @config_dir.setter
     def config_dir(self, dir: pathlib.Path):
