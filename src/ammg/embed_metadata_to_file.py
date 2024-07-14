@@ -94,36 +94,36 @@ class EmbedMetadataToFile():
 
         self.music['disk'] = [
             (
-                int(self.music_info.get('discnumber')),
-                int(self.music_info.get('disctotal'))
+                int(self.music_info.get('discnumber', '')),
+                int(self.music_info.get('disctotal', ''))
             )
         ]
 
         self.music['trkn'] = [
             (
-                int(self.music_info.get('track_number')),
-                int(self.music_info.get('tracktotal'))
+                int(self.music_info.get('track_number', '')),
+                int(self.music_info.get('tracktotal', ''))
             )
         ]
 
         # Freeform
         self.music['----:com.apple.iTunes:ISRC'] = [
             mutagen.mp4.MP4FreeForm(
-                data=self.music_info.get('isrc').encode(),
+                data=self.music_info.get('isrc', '').encode(),
                 dataformat=mutagen.mp4.AtomDataType.UTF8
             )
         ]
 
         self.music['----:com.apple.iTunes:LABEL'] = [
             mutagen.mp4.MP4FreeForm(
-                data=self.music_info.get('label').encode(),
+                data=self.music_info.get('label', '').encode(),
                 dataformat=mutagen.mp4.AtomDataType.UTF8
             )
         ]
 
         self.music['----:com.apple.iTunes:MEDIA'] = [
             mutagen.mp4.MP4FreeForm(
-                data=self.music_info.get('media').encode(),
+                data=self.music_info.get('media', '').encode(),
                 dataformat=mutagen.mp4.AtomDataType.UTF8
             )
         ]
