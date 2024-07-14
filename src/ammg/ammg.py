@@ -409,24 +409,19 @@ def get_args(args):
             print(f'\tFound {FB}{music_file}{FR}')
             print(f'\t{CY}Embeding Metadata{FR} ', end='')
 
+            music_info: dict = track
+            music_info['album'] = album_info.get('album_name')
+            music_info['album_artist'] = album_info.get('album_artist_name')
+            music_info['date'] = album_info.get('album_release_date')
+            music_info['disctotal'] = album_info.get('disc_count')
+            music_info['tracktotal'] = album_info.get('track_count')
+            music_info['releasetype'] = album_info.get('release_type')
+            music_info['copyright'] = album_info.get('copyright')
+            music_info['label'] = album_info.get('record_label')
+
             embed_data = EmbedMetadataToFile(
                 music_file=music_file,
-                title=track.get('title'),
-                artist=track.get('artist'),
-                album=album_info.get('album_name'),
-                album_artist=album_info.get('album_artist_name'),
-                date=album_info.get('album_release_date'),
-                composer=track.get('composer', ''),
-                genre=track.get('genre'),
-                discnumber=str(track.get('discnumber')),
-                disctotal=str(album_info.get('disc_count')),
-                tracknumber=str(track.get('track_number')),
-                tracktotal=str(album_info.get('track_count')),
-                media=track.get('media'),
-                releasetype=album_info.get('release_type'),
-                isrc=track.get('isrc'),
-                copyright_=album_info.get('copyright'),
-                label=album_info.get('record_label'),
+                music_info=music_info,
                 cover=cover_path,
                 cover_info=cover_info,
             )

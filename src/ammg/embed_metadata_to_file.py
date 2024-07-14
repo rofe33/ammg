@@ -4,64 +4,36 @@ import base64
 import sys
 
 from mutagen.flac import Picture
+from mutagen.mp4 import MP4Info
+from mutagen.oggopus import OggOpusInfo
 
 
 class EmbedMetadataToFile():
     def __init__(self,
                  music_file: pathlib.Path,
-                 title: str,
-                 artist: str,
-                 album: str,
-                 album_artist: str,
-                 date: str,
-                 composer: str,
-                 genre: str,
-                 discnumber: str,
-                 disctotal: str,
-                 tracknumber: str,
-                 tracktotal: str,
-                 media: str,
-                 releasetype: str,
-                 isrc: str,
-                 copyright_: str,
-                 label: str,
+                 music_info: dict,
                  cover: pathlib.Path,
                  cover_info: dict):
         self.music_file: pathlib.Path = music_file
-        self.music: mutagen.File = mutagen.File(self.music_file)
+        self.music_info: dict = music_info
+
+        self.music = mutagen.File(self.music_file)
 
         # Which metadata format to use
         # Not checking the file extension.
-        if isinstance(self.music.info, mutagen.mp4.MP4Info):
+        if isinstance(self.music.info, MP4Info):
             self.music_file_type = 'm4a'
-        elif isinstance(self.music.info, mutagen.oggopus.OggOpusInfo):
+        elif isinstance(self.music.info, OggOpusInfo):
             self.music_file_type = 'opus'
         else:
             print('File Type Not Supported.')
 
             sys.exit(2)
 
-        self.title = title
-        self.artist = artist
-        self.album = album
-        self.album_artist = album_artist
-        self.tracknumber = tracknumber
-        self.date = date
-        self.composer = composer
-        self.discnumber = discnumber
-        self.genre = genre
-        self.disctotal = disctotal
-        self.tracktotal = tracktotal
-        self.isrc = isrc
-        self.copyright = copyright_
-        self.releasetype = releasetype
-        self.media = media
-        self.label = label
+        self.cover: pathlib.Path = cover
+        self.cover_info: dict = cover_info
 
-        self.cover = cover
-        self.cover_info = cover_info
-
-    def _process_image(self) -> str:
+    def _process_image(self) -> str | bytes:
         """Process the picture."""
         with open(self.cover, 'rb') as pic:
             cover_data = pic.read()
@@ -95,7 +67,7 @@ class EmbedMetadataToFile():
         - [x] genre         -> \xa9gen
         - [x] cover         -> covr
         - [x] copyright     -> cprt
-        - [x] tracknumber   -> trkn[0]
+        - [x] track_number  -> trkn[0]
         - [x] tracktotal    -> trkn[1]
         - [x] discnumber    -> disk[0]
         - [x] disctotal     -> disk[1]
@@ -106,52 +78,52 @@ class EmbedMetadataToFile():
         - [ ] releasetype   -> There is no releasetype.
         """
 
-        self.music['\xa9nam'] = self.title
+        self.music['\xa9nam'] = self.music_info.get('title')
 
-        self.music['\xa9ART'] = self.artist
-        self.music['\xa9alb'] = self.album
-        self.music['aART'] = self.album_artist
+        self.music['\xa9ART'] = self.music_info.get('artist')
+        self.music['\xa9alb'] = self.music_info.get('album')
+        self.music['aART'] = self.music_info.get('album_artist')
 
-        self.music['\xa9day'] = self.date
+        self.music['\xa9day'] = self.music_info.get('date')
 
-        self.music['\xa9wrt'] = self.composer
-        self.music['\xa9gen'] = self.genre
+        self.music['\xa9wrt'] = self.music_info.get('composer')
+        self.music['\xa9gen'] = self.music_info.get('genre')
 
-        self.music['cprt'] = self.copyright
+        self.music['cprt'] = self.music_info.get('copyright')
         self.music['stik'] = [1]
 
         self.music['disk'] = [
             (
-                int(self.discnumber),
-                int(self.disctotal)
+                int(self.music_info.get('discnumber')),
+                int(self.music_info.get('disctotal'))
             )
         ]
 
         self.music['trkn'] = [
             (
-                int(self.tracknumber),
-                int(self.tracktotal)
+                int(self.music_info.get('track_number')),
+                int(self.music_info.get('tracktotal'))
             )
         ]
 
         # Freeform
         self.music['----:com.apple.iTunes:ISRC'] = [
             mutagen.mp4.MP4FreeForm(
-                data=self.isrc.encode(),
+                data=self.music_info.get('isrc').encode(),
                 dataformat=mutagen.mp4.AtomDataType.UTF8
             )
         ]
 
         self.music['----:com.apple.iTunes:LABEL'] = [
             mutagen.mp4.MP4FreeForm(
-                data=self.isrc.encode(),
+                data=self.music_info.get('label').encode(),
                 dataformat=mutagen.mp4.AtomDataType.UTF8
             )
         ]
 
         self.music['----:com.apple.iTunes:MEDIA'] = [
             mutagen.mp4.MP4FreeForm(
-                data=self.media.encode(),
+                data=self.music_info.get('media').encode(),
                 dataformat=mutagen.mp4.AtomDataType.UTF8
             )
         ]
@@ -172,7 +144,7 @@ class EmbedMetadataToFile():
         - [x] genre         -> genre
         - [x] cover         -> metadata_block_picture
         - [x] copyright     -> copyright
-        - [x] tracknumber   -> tracknumber
+        - [x] track_number  -> tracknumber
         - [x] tracktotal    -> tracktotal
         - [x] discnumber    -> discnumber
         - [x] disctotal     -> disctotal
@@ -182,24 +154,24 @@ class EmbedMetadataToFile():
         - [x] releasetype   -> releasetype
         """
 
-        self.music['title'] = self.title
-        self.music['artist'] = self.artist
-        self.music['album'] = self.album
-        self.music['albumartist'] = self.album_artist
-        self.music['tracknumber'] = str(self.tracknumber)
-        self.music['date'] = self.date
-        self.music['composer'] = self.composer
-        self.music['discnumber'] = str(self.discnumber)
-        self.music['genre'] = self.genre
-        self.music['disctotal'] = self.disctotal
-        self.music['totaldiscs'] = self.disctotal
-        self.music['tracktotal'] = self.tracktotal
-        self.music['totaltracks'] = self.tracktotal
-        self.music['isrc'] = self.isrc
-        self.music['copyright'] = self.copyright
-        self.music['releasetype'] = self.releasetype
-        self.music['media'] = self.media
-        self.music['label'] = self.label
+        self.music['title'] = self.music_info.get('title')
+        self.music['artist'] = self.music_info.get('artist')
+        self.music['album'] = self.music_info.get('album')
+        self.music['albumartist'] = self.music_info.get('album_artist')
+        self.music['tracknumber'] = str(self.music_info.get('track_number'))
+        self.music['date'] = self.music_info.get('date')
+        self.music['composer'] = self.music_info.get('composer', '')
+        self.music['discnumber'] = str(self.music_info.get('discnumber'))
+        self.music['genre'] = self.music_info.get('genre')
+        self.music['disctotal'] = str(self.music_info.get('disctotal'))
+        self.music['totaldiscs'] = str(self.music_info.get('disctotal'))
+        self.music['tracktotal'] = str(self.music_info.get('tracktotal'))
+        self.music['totaltracks'] = str(self.music_info.get('tracktotal'))
+        self.music['isrc'] = self.music_info.get('isrc')
+        self.music['copyright'] = self.music_info.get('copyright')
+        self.music['releasetype'] = self.music_info.get('releasetype')
+        self.music['media'] = self.music_info.get('media')
+        self.music['label'] = self.music_info.get('label')
         self.music['metadata_block_picture'] = [self._process_image()]
 
         self.music.save()
