@@ -26,6 +26,8 @@ CR = '\033[31m'  # Red
 CG = '\033[32m'  # Green
 CY = '\033[33m'  # Yellow
 
+CACHE = AmmgCache().cache_dir
+
 if platform.system() == 'Windows':
     os.system('')
 
@@ -140,7 +142,8 @@ def parse_arguments():
 
     get_parser.add_argument(
         '--do-not-check-token',
-        action='store_true',
+        action='store_false',
+        default=True,  # that means check_token is true by default
         help=(
             'Whether to not check token before using it'
             f' {FB}(default: false){FR}'
@@ -261,7 +264,7 @@ def parse_arguments():
 def get_args(args):
     """Work with the get command."""
     token = GetAppleMusicToken(
-        no_check=args.do_not_check_token,
+        check_token=args.do_not_check_token,
     ).get_token()
 
     api = ApiMusicApple(
@@ -276,7 +279,7 @@ def get_args(args):
     album_info = api.analyze_response_album(response)
 
     # Downloading Cover to cache
-    cover_path = api.cache_dir.joinpath(f'{args.album_id}.jpg')
+    cover_path = CACHE.joinpath(f'{args.album_id}.jpg')
     cover_url = album_info.get('cover_url')
     cover_url = cover_url.replace(
         '{w}',

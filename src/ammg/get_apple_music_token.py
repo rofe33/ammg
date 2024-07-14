@@ -11,21 +11,19 @@ from .ammg_config import AmmgConfig
 # the import is  not at the top  to avoid circular
 # import.
 
+CONFIG_FILE: pathlib.Path = AmmgConfig().config_file
+APPLE_MUSIC_URL: str = 'https://music.apple.com'
+
 
 class GetAppleMusicToken():
     def __init__(self,
-                 token: str = '',
-                 no_check: bool = False):
-        self.apple_music_url: str = 'https://music.apple.com'
-
-        self.token: str = token
-        self.no_check: bool = no_check
-
-        self.config_file: pathlib.Path = AmmgConfig().config_file
+                 check_token: bool = False):
+        self.token: str = ''
+        self.check_token: bool = check_token
 
         # Load local token
-        if self.config_file.is_file():
-            with open(self.config_file, 'r') as config_file:
+        if CONFIG_FILE.is_file():
+            with open(CONFIG_FILE, 'r') as config_file:
                 try:
                     content = json.load(
                         fp=config_file
@@ -35,9 +33,10 @@ class GetAppleMusicToken():
                 except json.JSONDecodeError:
                     self.token = ''
 
-    def _get_js_filename(self) -> str:
+    @staticmethod
+    def _get_js_filename() -> str:
         """Returns the js file."""
-        response = requests.get(self.apple_music_url)
+        response = requests.get(APPLE_MUSIC_URL)
 
         content = response.text
 
@@ -47,51 +46,61 @@ class GetAppleMusicToken():
 
         return match[0]
 
-    def _get_js_content(self) -> str:
+    @staticmethod
+    def _get_js_content() -> str:
         """Returns the js file content."""
-        js_filename = self._get_js_filename()
+        js_filename = GetAppleMusicToken._get_js_filename()
         response = requests.get(
-            f'{self.apple_music_url}{js_filename}'
+            f'{APPLE_MUSIC_URL}{js_filename}'
         )
 
         return response.text
 
-    def get_token(self) -> str:
-        """Returns the apple music JWT token."""
-        # If no_check, return stored token if stored
-        if self.no_check and self.token != '':
-            return self.token
-
-        # Check for stored token validity if it's expired
-        if self.check_token_validity():
-            return self.token
-
+    @staticmethod
+    def get_new_token() -> str:
+        """Returns a new token and updates config."""
         jwt_regex_pattern = re.compile(
             'eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IldlYlBsYXlLaWQifQ'
             '[^"]+'
         )
 
-        js_content = self._get_js_content()
+        js_content = GetAppleMusicToken._get_js_content()
         jwt_match = re.findall(jwt_regex_pattern, js_content)
 
-        self.token = jwt_match[0]
+        token = jwt_match[0]
 
         # Update config file with new token
-        with open(self.config_file, 'w') as config_file:
+        with open(CONFIG_FILE, 'w') as config_file:
             json.dump(
-                obj={'token': self.token},
+                obj={'token': token},
                 fp=config_file,
                 indent=4
             )
 
+        return token
+
+    def get_token(self) -> str:
+        """Returns the apple music JWT token."""
+        if self.token == '':  # There's no token in config
+            return self.get_new_token()
+
+        if self.check_token:
+            return (
+                self.token
+                if self.check_token_validity(self.token)
+                else self.get_new_token()  # token in config is expired
+            )
+
+        # check_token is False
         return self.token
 
-    def check_token_validity(self) -> bool:
+    @staticmethod
+    def check_token_validity(token) -> bool:
         """Returns true if token is valid, otherwise false."""
         from .api_work import ApiMusicApple
 
         api = ApiMusicApple(
-            self.token,
+            token,
             '1681177202',
             clean_request=True,
         )

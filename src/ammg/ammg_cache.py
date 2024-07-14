@@ -1,49 +1,66 @@
 import pathlib
 import platform
+import sys
 
 
 class AmmgCache():
     """Handles cache work."""
 
     def __init__(self):
+        self.__cache_dir: pathlib.Path
+
         system_os = platform.system()
 
         if system_os == 'Linux':
             # ~/.cache/ammg
-            self.cache_dir = pathlib.Path.home().joinpath(
+            self.__cache_dir = pathlib.Path.home().joinpath(
                 '.cache', 'ammg'
             )
         elif system_os == 'Darwin':
             # ~/Library/Caches/ammg
-            self.cache_dir = pathlib.Path.home().joinpath(
+            self.__cache_dir = pathlib.Path.home().joinpath(
                 'Library', 'Caches', 'ammg'
             )
         elif system_os == 'Windows':
             # ~\AppData\Local\ammg
-            self.cache_dir = pathlib.Path.home().joinpath(
+            self.__cache_dir = pathlib.Path.home().joinpath(
                 'AppData', 'Local', 'ammg'
             )
         else:
             # If     unknown     system     create
             # ammg_cache  folder  for cache,  in
             # the current working directory.
-            self.cache_dir = pathlib.Path().cwd().joinpath(
+            self.__cache_dir = pathlib.Path().cwd().joinpath(
                 'ammg_cache'
             )
 
+    @property
+    def cache_dir(self):
+        """The cache_dir property."""
         # Create directory if it doesn't exists
-        if not self.cache_dir.is_dir():
-            self.cache_dir.mkdir(parents=True)
+        if not self.__cache_dir.is_dir():
+            self.__cache_dir.mkdir(parents=True)
+
+        return self.__cache_dir
+
+    @cache_dir.setter
+    def cache_dir(self, dir: pathlib.Path):
+        if isinstance(dir, pathlib.Path):
+            self.__cache_dir = dir
+        else:
+            print('dir should be a pathlib.Path object.')
+
+            sys.exit(1)
 
     def clean_cache(self,
                     dry_run: bool = True):
         """Clean the cache from system."""
         files: list[pathlib.Path] = [
             *[
-                x for x in self.cache_dir.glob('*.json')
+                x for x in self.__cache_dir.glob('*.json')
             ],
             *[
-                x for x in self.cache_dir.glob('*.jpg')
+                x for x in self.__cache_dir.glob('*.jpg')
             ]
         ]
 
@@ -88,9 +105,9 @@ class AmmgCache():
         """
         return sum([
             *[
-                x.stat().st_size for x in self.cache_dir.glob('*.json')
+                x.stat().st_size for x in self.__cache_dir.glob('*.json')
             ],
             *[
-                x.stat().st_size for x in self.cache_dir.glob('*.jpg')
+                x.stat().st_size for x in self.__cache_dir.glob('*.jpg')
             ]
         ])

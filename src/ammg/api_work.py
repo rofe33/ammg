@@ -5,6 +5,8 @@ import sys
 
 from .ammg_cache import AmmgCache
 
+CACHE: pathlib.Path = AmmgCache().cache_dir
+
 
 class ApiMusicApple():
     def __init__(self,
@@ -24,7 +26,27 @@ class ApiMusicApple():
             'Origin': 'https://music.apple.com',
         }
 
-        self.cache_dir: pathlib.Path = AmmgCache().cache_dir
+    @staticmethod
+    def check_cache(album_id: str) -> bool | dict:
+        """Check if request is already cached.
+
+        Returns:
+            - False:
+                1) if file doesn't exists.
+                2) if request status isn't 200.
+            - Cached json data if status is 200.
+        """
+        cache_file = CACHE.joinpath(
+            f'{album_id}.json'
+        )
+
+        if cache_file.is_file():
+            with open(cache_file, 'r') as cf:
+                data = json.load(cf)
+
+                return data if data.get('status') == 200 else False
+
+        return False
 
     def get_response_data(self) -> dict:
         """Returns a dict that contains the status and
@@ -36,13 +58,9 @@ class ApiMusicApple():
         """
         # Attempting to  read from cache  if cache
         # file exists for album_id
-        cache_file = self.cache_dir.joinpath(f'{self.album_id}.json')
-
-        if not self.clean_request and cache_file.is_file():
-            with open(cache_file, 'r') as cf:
-                data = json.load(cf)
-
-                return data
+        cached_data: bool | dict = self.check_cache(self.album_id)
+        if isinstance(cached_data, dict):
+            return cached_data
 
         response_data: dict = {}
 
@@ -61,6 +79,9 @@ class ApiMusicApple():
         response_data['json'] = response.json()
 
         # Writing cache
+        cache_file = CACHE.joinpath(
+            f'{self.album_id}.json'
+        )
         with open(cache_file, 'w') as cf:
             json.dump(
                 obj=response_data,
