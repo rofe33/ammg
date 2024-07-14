@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ammg"
-version = "0.2.1"
+version = "0.2.2"
 description = "A tool for appending metadata from Apple Music to music files."
 authors = [
   { name="Raphael Tannous", email="raphaeltannous@proton.me" },
